@@ -1,0 +1,19 @@
+# Parameters from Phillpot for Bi2O3 interatomic potentials
+# Theodore Fobe, Sept 2018
+
+variable Aoo equal     1290.0
+variable rhooo equal   0.30110
+variable Boo equal     47683.4
+variable sigoo equal   0.14438
+variable Coo equal     71.30
+variable Abio equal    323.0
+variable rhobio equal  0.41631
+variable Bbio equal    5745.0
+variable sigbio equal  0.27279
+variable Cbio equal    0.00 
+variable Abibi equal   15983.1
+variable rhobibi equal 0.25643
+variable Bbibi equal   3087441.4
+variable sigbibi equal 0.10406
+variable Cbibi equal   40.36
+

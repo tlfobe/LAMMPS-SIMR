@@ -1,0 +1,27 @@
+# General LAMMPS rerun script
+# Used for evaluating energies and volumes from one state to the next...
+
+# Clear and efine units, atom style and BC types
+
+clear
+units metal
+boundary p p p
+atom_style charge # Need to have previous simulation write out minimized structure as a .lmp file
+                  # and as a .pdb for mdtraj
+
+read_data mini.xyz
+
+include bi2o3_potentials.prm #file with constants from Phillpot paper
+pair_style hybrid/overlay buck/coul/long 10.0 buck 10
+kspace_style ewald 1.0e-4 # Unsure of what a good tolerance is for this
+variable Coo equal ${Coo}/2
+variable Cbio equal ${Cbio}/2
+variable Cbibi equal ${Cbibi}/2
+pair_coeff 1 1 buck/coul/long ${Abibi} ${rhobibi} ${Cbibi}
+pair_coeff 1 1 buck ${Bbibi} ${sigbibi} ${Cbibi}
+pair_coeff 1 2 buck/coul/long ${Abio} ${rhobio} ${Cbio}
+pair_coeff 1 2 buck ${Bbio} ${sigbio} ${Cbio}
+pair_coeff 2 2 buck/coul/long ${Aoo} ${rhooo} ${Coo}
+pair_coeff 2 2 buck ${Boo} ${sigoo} ${Coo}
+
+

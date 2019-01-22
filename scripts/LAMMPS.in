@@ -1,0 +1,81 @@
+# LAMMPS Input File for testing Bi2O3 alpha phase
+# Theodore Fobe, Sept 2018
+# Good Luck!
+
+# Initialize Simulation
+clear
+units metal # g/mols, Ang, ps, eV, Ang/ps, eV/Ang, eV, Kelvin, bars, Poise, n*eV, q*Ang,V/Ang, g/cm^n
+dimension 3
+boundary p p p
+atom_style charge 
+
+# Create Lattice Structure
+read_data ${poly}
+replicate 3 3 3 # a,b,d,e structures have 20 atoms repicated 3 times in xyz
+		# g structures have 60 atoms and may need to be replicated less
+
+# Force Fields
+
+include bi2o3_potentials.prm #file with constants from Phillpot paper
+pair_style hybrid/overlay buck/coul/long 10.0 buck 10
+kspace_style ewald 1.0e-4 # Unsure of what a good tolerance is for this
+variable Coo equal ${Coo}/2
+variable Cbio equal ${Cbio}/2
+variable Cbibi equal ${Cbibi}/2
+pair_coeff 1 1 buck/coul/long ${Abibi} ${rhobibi} ${Cbibi}
+pair_coeff 1 1 buck ${Bbibi} ${sigbibi} ${Cbibi} 
+pair_coeff 1 2 buck/coul/long ${Abio} ${rhobio} ${Cbio}
+pair_coeff 1 2 buck ${Bbio} ${sigbio} ${Cbio}
+pair_coeff 2 2 buck/coul/long ${Aoo} ${rhooo} ${Coo}
+pair_coeff 2 2 buck ${Boo} ${sigoo} ${Coo} 
+# Minimization
+#
+
+reset_timestep 0
+thermo 50
+thermo_style custom step etotal ke pe vol press pxx pyy pzz
+min_style cg
+minimize 1e-16 1e-16  5000 5000
+
+write_dump all pdb mini.pdb modify sort id element Bi O
+write_dump all molfile 
+# Equilibration
+#
+reset_timestep 0
+timestep 0.004
+velocity all create ${tmp} 14231 mom yes rot no
+#compute thermo_temp all temp
+#compute thermo_pe all pe
+#compute thermo_ke all ke
+#compute thermo_etotal all global/atom sum c_thermo_pe c_thermo_ke
+#compute thermo_vol all vol
+#compute 1 all etotal/atom
+#compute pe all reduce sum c_1
+fix 1 all npt temp ${tmp} ${tmp} 1 iso ${prs} ${prs} 1 mtk yes
+
+# Output every 1000 steps
+thermo 1000
+thermo_style custom step etotal ke pe vol press pxx pyy pzz
+
+# Define when to dump data
+dump 1 all dcd 1000 equil.dcd
+write_data equil.lmp
+
+#dump 2 all custom 1000 etot.dump id themo_pe
+#dump 3 all custom 500 temp.dump c_thermo_temp
+#dump 4 all custom 500 pe.dump c_thermo_pe
+#dump 5 all custom 500 ke.dump c_thermo_ke
+#dump_modify 1 element Bi O
+#dump 2 all custom 500 bi203_pke.data c_pe c_ke
+
+# Run for 
+run 1000000
+
+
+# Production RUN
+reset_timestep 0
+dump 2 all dcd 1000 prod.dcd
+run 10000000
+
+# Simulation Finished
+print "All Done!"
